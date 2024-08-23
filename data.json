@@ -1,10 +1,1 @@
-{
-        "timestamp": [],
-        "teplota": [],
-        "teplota_panel": [],
-        "vlhkost": [],
-        "napeti_naprazdno": [],
-        "napeti_zatez": [],
-        "proud": [],
-        "vykon": []
-}
+{"vykon": [], "proud": [], "teplota": [], "timestamp": [], "vlhkost": [], "napeti_zatez": [], "napeti_naprazdno": [], "teplota_panel": []}
