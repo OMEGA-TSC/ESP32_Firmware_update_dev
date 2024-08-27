@@ -26,7 +26,11 @@ panel_naprazdno = ADC(Pin(2))
 panel_naprazdno.atten(ADC.ATTN_11DB)
 panel_zatez = ADC(Pin(15))
 panel_zatez.atten(ADC.ATTN_0DB)
-#sensors = panel_temp.scan()
+pin_zatez = Pin(8, Pin.OUT)
+pin_nabijecka = Pin(7, Pin.OUT)
+pin_zatez.value(1)
+pin_nabijecka.value(1)
+sensors = panel_temp.scan()
 FW_VERSION = 0.01
 UID = int(machine.unique_id().hex(), 16)
 MQTT_POST_TOPIC = "/mfve/" + str(UID) + "/data"
@@ -85,38 +89,37 @@ def Measure():
         with open('sampling_config.json', 'w') as f:
             ujson.dump(sampling_config, f)
             
-    #dht22.measure()
-    
+    dht22.measure()
     teplota = data['teplota']
-    teplota.append(random.randint(20,25))#dht22.temperature())
-    data['teplota'] = teplota
-    
+    teplota.append(dht22.temperature())
+    data['teplota'] = teplota 
     vlhkost = data['vlhkost']
-    vlhkost.append(random.randint(40,50))
-    vlhkost = data['vlhkost']
-    
-    #panel_temp.convert_temp()
+    vlhkost.append(dht22.humidity())
+    vlhkost = data['vlhkost'] 
+    panel_temp.convert_temp()
+    time.sleep_ms(200)
     teplota_panel = data['teplota_panel']
-    teplota_panel.append(random.randint(40,50))#panel_temp.read_temp(sensors[0]))
-    data['teplota_panel'] = teplota_panel
-     
+    teplota_panel.append(panel_temp.read_temp(sensors[0]))
+    data['teplota_panel'] = teplota_panel 
+    pin_nabijecka.value(0)
+    pin_zatez.value(0)
     napeti_hod = round((panel_zatez.read() * (1.2 / 4095)), 3)
     napeti_zatez = data['napeti_zatez']
-    napeti_zatez.append(random.randint(100,200) / 100)
+    napeti_zatez.append(napeti_hod)
     data['napeti_zatez'] = napeti_zatez
-    
+    pin_nabijecka.value(0)
+    pin_zatez.value(1)
     napeti_naprazdno = data['napeti_naprazdno']
-    napeti_naprazdno.append(random.randint(6000,6450) / 100)
+    napeti_naprazdno.append(round((panel_naprazdno.read() * (3.3 / 4095)), 3)
     data['napeti_naprazdno'] = napeti_naprazdno
-    
+    pin_nabijecka.value(1)
+    pin_zatez.value(0)
     vykon = data['vykon']
-    vykon.append((((napeti_hod * napeti_hod) / 9) * 727.272727))
+    vykon.append((((napeti_hod * napeti_hod) / 12) * 727.272727))
     data['vykon'] = vykon
-    
     proud = data['proud']
-    proud.append(round(napeti_hod / 9, 4))
+    proud.append(round(napeti_hod / 12, 4))
     data['proud'] = proud
-    
     timestamp = data['timestamp']
     timenow = time.time()
     timestamp.append((unix_epoch_difference + (timezone * 3600) + timenow))
@@ -141,13 +144,13 @@ def WiFiBegin():
     station = network.WLAN(network.STA_IF)
     station.active(True)
     station.connect(WIFI_SSID, WIFI_PASS)
-    while station.isconnected() == False or counter > 10:
+    while station.isconnected() == False and counter < 10:
         print("Attempting to connect to '" + WIFI_SSID + "'")
         time.sleep(2)
         counter += 1
     if station.isconnected():
         print("Connected to '" + WIFI_SSID + "'" + " with IP address: " + station.ifconfig()[0])
-        #ntptime.settime()
+        ntptime.settime()
     else:
         send_success = False
 
@@ -186,11 +189,6 @@ def Update():
                 success = True
             else:
                 success = False
-                
-def sub_cb(topic, msg):
-    print((topic, msg))
-    if topic == b'hello' and msg == b'received':
-        print('ESP received hello message')
   
 def SendData():
     global data_zero, MQTT_POST_TOPIC, data, UID, mqtt_server, mqtt_pass, mqtt_port, mqtt_user, send_success
@@ -225,5 +223,5 @@ def main():
                 update = CheckUpdate()
                 if update:
                     Update()
-    machine.deepsleep((perioda_mereni * 1000) - 200)   
+    machine.deepsleep((perioda_mereni * 1000) - 400)   
 main()
