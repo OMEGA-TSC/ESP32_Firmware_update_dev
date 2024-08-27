@@ -25,7 +25,7 @@ panel_temp = ds18x20.DS18X20(onewire.OneWire(Pin(23)))
 panel_naprazdno = ADC(Pin(2))
 panel_naprazdno.atten(ADC.ATTN_11DB)
 panel_zatez = ADC(Pin(15))
-panel_zatez.atten(ADC.ADC.ATTN_0DB)
+panel_zatez.atten(ADC.ATTN_0DB)
 #sensors = panel_temp.scan()
 FW_VERSION = 0.01
 UID = int(machine.unique_id().hex(), 16)
@@ -97,7 +97,7 @@ def Measure():
     
     #panel_temp.convert_temp()
     teplota_panel = data['teplota_panel']
-    teplota_panel.append()#panel_temp.read_temp(sensors[0]))
+    teplota_panel.append(random.randint(40,50))#panel_temp.read_temp(sensors[0]))
     data['teplota_panel'] = teplota_panel
      
     napeti_hod = round((panel_zatez.read() * (1.2 / 4095)), 3)
@@ -105,7 +105,7 @@ def Measure():
     napeti_zatez.append(random.randint(100,200) / 100)
     data['napeti_zatez'] = napeti_zatez
     
-    napeti_naprazdno = data['naperi_naprazdno']
+    napeti_naprazdno = data['napeti_naprazdno']
     napeti_naprazdno.append(random.randint(6000,6450) / 100)
     data['napeti_naprazdno'] = napeti_naprazdno
     
