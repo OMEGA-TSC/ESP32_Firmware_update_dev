@@ -23,14 +23,15 @@ rtc = machine.RTC()
 dht22 = dht.DHT22(Pin(4))
 panel_temp = ds18x20.DS18X20(onewire.OneWire(Pin(23)))
 panel_naprazdno = ADC(Pin(2))
-panel_naprazdno.atten(ADC.ATTN_11DB)
+#panel_naprazdno.atten(machine.ADC.ATTN_11DB)
 panel_zatez = ADC(Pin(15))
-panel_zatez.atten(ADC.ATTN_0DB)
-pin_zatez = Pin(8, Pin.OUT)
-pin_nabijecka = Pin(7, Pin.OUT)
+#panel_zatez.atten(machine.ADC.ATTN_0DB)
+pin_zatez = Pin(17, Pin.OUT)
+pin_nabijecka = Pin(16, Pin.OUT)
 pin_zatez.value(1)
 pin_nabijecka.value(1)
 sensors = panel_temp.scan()
+print(sensors)
 FW_VERSION = 0.01
 UID = int(machine.unique_id().hex(), 16)
 MQTT_POST_TOPIC = "/mfve/" + str(UID) + "/data"
@@ -89,17 +90,17 @@ def Measure():
         with open('sampling_config.json', 'w') as f:
             ujson.dump(sampling_config, f)
             
-    dht22.measure()
+    #dht22.measure()
     teplota = data['teplota']
     teplota.append(dht22.temperature())
     data['teplota'] = teplota 
     vlhkost = data['vlhkost']
     vlhkost.append(dht22.humidity())
     vlhkost = data['vlhkost'] 
-    panel_temp.convert_temp()
+   # panel_temp.convert_temp()
     time.sleep_ms(200)
     teplota_panel = data['teplota_panel']
-    teplota_panel.append(panel_temp.read_temp(sensors[0]))
+    #teplota_panel.append(panel_temp.read_temp(sensors[0]))
     data['teplota_panel'] = teplota_panel 
     pin_nabijecka.value(0)
     pin_zatez.value(0)
