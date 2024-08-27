@@ -110,7 +110,7 @@ def Measure():
     pin_nabijecka.value(0)
     pin_zatez.value(1)
     napeti_naprazdno = data['napeti_naprazdno']
-    napeti_naprazdno.append(round((panel_naprazdno.read() * (3.3 / 4095)), 3)
+    napeti_naprazdno.append(round((panel_naprazdno.read() * (3.3 / 4095)), 3))
     data['napeti_naprazdno'] = napeti_naprazdno
     pin_nabijecka.value(1)
     pin_zatez.value(0)
